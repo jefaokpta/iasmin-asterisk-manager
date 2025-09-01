@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: iasmin-asterisk-ari
+
+ari:
+  base-url: "http://iasmin-pabx.vipsolutions.com.br:8088"
+  username: "iasmin"
+  password: "iasmin123"
+  app-name: "test-outbound-router-call-app"
