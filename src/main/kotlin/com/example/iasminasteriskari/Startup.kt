@@ -1,6 +1,7 @@
 package com.example.iasminasteriskari
 
 import ch.loway.oss.ari4java.ARI
+import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
 import ch.loway.oss.ari4java.generated.models.Message
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 
 @Component
@@ -33,21 +36,31 @@ class Startup() {
     }
 
     private fun connect() {
-        val ari = ARI.build(
+        val ari = AriFactory.nettyHttp(
             urlBase,
-            appName,
             username,
             password,
-            AriVersion.ARI_8_0_0
+            AriVersion.ARI_8_0_0,
+            appName
         )
 
         ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
-            override fun onSuccess(message: Message?) {
-                logger.info("onSuccess - {}", message)
+            override fun onSuccess(message: Message) {
+//                val task = Executors.newVirtualThreadPerTaskExecutor()
+//                task.submit { super.onSuccess(message) }
+//                task.shutdown()
+                super.onSuccess(message)
             }
 
-            protected override fun onStasisStart(message: StasisStart) {
-                logger.info("StasisStart - {}", message)
+            override fun onStasisStart(stasisStart: StasisStart) {
+                val channel = stasisStart.channel
+                logger.info("${channel.id} >> ${channel.name}")
+//                ari.channels().originate("PJSIP/6002").setApp(appName).setCallerId("Caller identity").setTimeout(30).execute()
+                ari.channels().answer(channel.id).execute()
+                TimeUnit.SECONDS.sleep(1)
+                ari.channels().play(channel.id, "sound:hello-world").execute()
+                TimeUnit.SECONDS.sleep(2)
+                ari.channels().hangup(channel.id).execute()
             }
 
             override fun onConnectionEvent(event: AriConnectionEvent?) {
