@@ -4,7 +4,9 @@ import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
+import ch.loway.oss.ari4java.generated.models.ChannelStateChange
 import ch.loway.oss.ari4java.generated.models.Message
+import ch.loway.oss.ari4java.generated.models.StasisEnd
 import ch.loway.oss.ari4java.generated.models.StasisStart
 import ch.loway.oss.ari4java.tools.AriConnectionEvent
 import ch.loway.oss.ari4java.tools.RestException
@@ -12,13 +14,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
 @Component
-class Startup() {
+class Startup(private val ariTaskExecutor: ThreadPoolTaskExecutor) {
     private val logger = LoggerFactory.getLogger(Startup::class.java)
     @Value("\${ari.base-url}")
     private var urlBase: String = ""
@@ -46,10 +48,7 @@ class Startup() {
 
         ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
             override fun onSuccess(message: Message) {
-//                val task = Executors.newVirtualThreadPerTaskExecutor()
-//                task.submit { super.onSuccess(message) }
-//                task.shutdown()
-                super.onSuccess(message)
+                ariTaskExecutor.execute { super.onSuccess(message) }
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
@@ -59,16 +58,24 @@ class Startup() {
                 ari.channels().answer(channel.id).execute()
                 TimeUnit.SECONDS.sleep(1)
                 ari.channels().play(channel.id, "sound:hello-world").execute()
-                TimeUnit.SECONDS.sleep(2)
+                TimeUnit.SECONDS.sleep(3)
                 ari.channels().hangup(channel.id).execute()
             }
 
-            override fun onConnectionEvent(event: AriConnectionEvent?) {
+            override fun onConnectionEvent(event: AriConnectionEvent) {
                 logger.info("Conexao event: {}", event)
             }
 
             override fun onFailure(e: RestException?) {
                 logger.error("Erro conectando to ARI", e)
+            }
+
+            override fun onStasisEnd(stasisEnd: StasisEnd) {
+                logger.info("${stasisEnd.channel.id} >> Stasis end - Canal: ${stasisEnd.channel.name} desligado")
+            }
+
+            override fun onChannelStateChange(message: ChannelStateChange) {
+                logger.warn("Channel state change: ${message.channel.id} - ${message.channel.state}")
             }
         })
     }
