@@ -1,6 +1,5 @@
-package com.example.iasminasteriskari
+package com.example.iasminasteriskari.ari
 
-import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
@@ -10,18 +9,22 @@ import ch.loway.oss.ari4java.generated.models.StasisEnd
 import ch.loway.oss.ari4java.generated.models.StasisStart
 import ch.loway.oss.ari4java.tools.AriConnectionEvent
 import ch.loway.oss.ari4java.tools.RestException
+import com.example.iasminasteriskari.ari.actions.ActionEnum
+import com.example.iasminasteriskari.ari.actions.AriAction
+import com.example.iasminasteriskari.ari.actions.RunActionService
+import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.event.EventListener
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
-import java.util.concurrent.TimeUnit
-
 
 @Component
-class Startup(private val ariTaskExecutor: ThreadPoolTaskExecutor) {
-    private val logger = LoggerFactory.getLogger(Startup::class.java)
+class AriConnection(
+    private val ariTaskExecutor: ThreadPoolTaskExecutor,
+    private val channelStateCache: ChannelStateCache,
+    private val runActionService: RunActionService
+) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
     @Value("\${ari.base-url}")
     private var urlBase: String = ""
     @Value("\${ari.username}")
@@ -31,8 +34,8 @@ class Startup(private val ariTaskExecutor: ThreadPoolTaskExecutor) {
     @Value("\${ari.app-name}")
     private var appName: String = ""
 
-    @EventListener(ApplicationReadyEvent::class)
-    fun onReady() {
+    @PostConstruct
+    fun start() {
         logger.info("Ari conectando...")
         connect()
     }
@@ -53,13 +56,18 @@ class Startup(private val ariTaskExecutor: ThreadPoolTaskExecutor) {
 
             override fun onStasisStart(stasisStart: StasisStart) {
                 val channel = stasisStart.channel
-                logger.info("${channel.id} >> ${channel.name}")
+                channelStateCache.addChannelState(
+                    ChannelState(
+                        channel, mutableListOf(
+                            AriAction(ActionEnum.ANSWER),
+                            AriAction(ActionEnum.PLAYBACK, listOf("sound:hello-world")),
+                            AriAction(ActionEnum.HANGUP)
+                        )
+                    )
+                )
+                logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
+                runActionService.runAction(ari, channel)
 //                ari.channels().originate("PJSIP/6002").setApp(appName).setCallerId("Caller identity").setTimeout(30).execute()
-                ari.channels().answer(channel.id).execute()
-                TimeUnit.SECONDS.sleep(1)
-                ari.channels().play(channel.id, "sound:hello-world").execute()
-                TimeUnit.SECONDS.sleep(3)
-                ari.channels().hangup(channel.id).execute()
             }
 
             override fun onConnectionEvent(event: AriConnectionEvent) {
@@ -72,11 +80,16 @@ class Startup(private val ariTaskExecutor: ThreadPoolTaskExecutor) {
 
             override fun onStasisEnd(stasisEnd: StasisEnd) {
                 logger.info("${stasisEnd.channel.id} >> Stasis end - Canal: ${stasisEnd.channel.name} desligado")
+                channelStateCache.removeChannelState(stasisEnd.channel)
             }
 
             override fun onChannelStateChange(message: ChannelStateChange) {
-                logger.warn("Channel state change: ${message.channel.id} - ${message.channel.state}")
+                logger.info("${message.channel.id} >> Estado do canal, mudou para ${message.channel.state}")
+                channelStateCache.updateChannel(message.channel)
+                runActionService.runAction(ari, message.channel)
             }
+
         })
     }
+
 }
