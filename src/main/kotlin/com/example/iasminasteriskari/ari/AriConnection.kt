@@ -5,6 +5,7 @@ import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
 import ch.loway.oss.ari4java.generated.models.ChannelStateChange
 import ch.loway.oss.ari4java.generated.models.Message
+import ch.loway.oss.ari4java.generated.models.PlaybackFinished
 import ch.loway.oss.ari4java.generated.models.StasisEnd
 import ch.loway.oss.ari4java.generated.models.StasisStart
 import ch.loway.oss.ari4java.tools.AriConnectionEvent
@@ -60,7 +61,7 @@ class AriConnection(
                     ChannelState(
                         channel, mutableListOf(
                             AriAction(ActionEnum.ANSWER),
-                            AriAction(ActionEnum.PLAYBACK, listOf("sound:hello-world")),
+                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:tt-monkeys")),
                             AriAction(ActionEnum.HANGUP)
                         )
                     )
@@ -81,6 +82,13 @@ class AriConnection(
             override fun onStasisEnd(stasisEnd: StasisEnd) {
                 logger.info("${stasisEnd.channel.id} >> Stasis end - Canal: ${stasisEnd.channel.name} desligado")
                 channelStateCache.removeChannelState(stasisEnd.channel)
+            }
+
+            override fun onPlaybackFinished(message: PlaybackFinished) {
+                logger.warn("Playback ${message.playback.id} terminou")
+                channelStateCache.removeActionByActionId(message.playback.id)?.let { action ->
+                    runActionService.runAction(ari, action.channel)
+                }
             }
 
             override fun onChannelStateChange(message: ChannelStateChange) {

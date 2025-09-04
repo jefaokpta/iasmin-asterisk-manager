@@ -32,4 +32,16 @@ class ChannelStateCache {
         channelStates.remove(channel.id)
     }
 
+    @Synchronized
+    fun removeActionByActionId(actionId: String): ChannelState? {
+        val channelState = channelStates.values.find { it.actions.any { action -> action.actionId == actionId } }
+        channelState?.actions?.removeFirstOrNull()
+        return channelState
+    }
+
+    @Synchronized
+    fun setTopAction(channelId: String, action: AriAction) {
+        channelStates[channelId]?.actions?.addFirst(action)
+    }
+
 }
