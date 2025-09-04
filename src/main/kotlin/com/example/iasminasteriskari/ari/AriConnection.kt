@@ -66,12 +66,10 @@ class AriConnection(
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 channelStateCache.addChannelState(
                     ChannelState(
+                        controlNumber = stasisStart.args[0],
+                        peerDDR = stasisStart.args[1],
                         channel, mutableListOf(
-                            AriAction(ActionEnum.SET_VARIABLE, args = listOf("CALLERID(num)", "1001929")),
-                            AriAction(ActionEnum.SET_CDR_VARIABLE, args = listOf("CDR(userfield)", "OUTBOUND")),
-                            AriAction(ActionEnum.ANSWER),
 //                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
-                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:tt-monkeys")),
                             AriAction(ActionEnum.HANGUP)
                         )
                     )
