@@ -62,14 +62,21 @@ class AriConnection(
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
+                if (stasisStart.args.contains("dialed")) {
+                    logger.warn("Canal discado")
+                    return
+                }
                 val channel = stasisStart.channel
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 channelStateCache.addChannelState(
                     ChannelState(
                         controlNumber = stasisStart.args[0],
                         peerDDR = stasisStart.args[1],
-                        channel, mutableListOf(
-//                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
+                        channel = channel,
+                        actions = mutableListOf(
+                            AriAction(ActionEnum.ANSWER),
+                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
+//                            AriAction(ActionEnum.DIAL_TRUNK, args = listOf("IASMIN_JUPITER", stasisStart.args[1])),
                             AriAction(ActionEnum.HANGUP)
                         )
                     )

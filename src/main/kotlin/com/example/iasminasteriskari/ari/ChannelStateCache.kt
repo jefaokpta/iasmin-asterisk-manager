@@ -23,8 +23,8 @@ class ChannelStateCache {
     }
 
     @Synchronized
-    fun nextAction(channelId: String): AriAction? {
-        return channelStates[channelId]?.actions?.removeFirstOrNull()
+    fun nextAction(channelId: String): ChannelState? {
+        return channelStates[channelId]
     }
 
     @Synchronized
