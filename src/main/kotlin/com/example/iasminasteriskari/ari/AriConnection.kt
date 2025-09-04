@@ -57,19 +57,18 @@ class AriConnection(
 
         ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
             override fun onSuccess(message: Message) {
-                //TODO: e se deixar na thread original? testar
+                //TODO: e se deixar na thread original? testar carga no SIPP
                 ariTaskExecutor.execute { super.onSuccess(message) }
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
                 val channel = stasisStart.channel
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
-                ari.channels().setChannelVar(channel.id, "CDR(userfield)").setValue("OUTBOUND").execute()
                 channelStateCache.addChannelState(
                     ChannelState(
                         channel, mutableListOf(
-                            AriAction(ActionEnum.SET_VARIABLE, args = listOf("CONNECTEDLINE(num)", "1132931515")),
                             AriAction(ActionEnum.SET_VARIABLE, args = listOf("CALLERID(num)", "1001929")),
+                            AriAction(ActionEnum.SET_CDR_VARIABLE, args = listOf("CDR(userfield)", "OUTBOUND")),
                             AriAction(ActionEnum.ANSWER),
 //                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
                             AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:tt-monkeys")),
@@ -77,8 +76,7 @@ class AriConnection(
                         )
                     )
                 )
-                runActionService.runAction(ari, channel)
-//                ari.channels().originate("PJSIP/6002").setApp(appName).setCallerId("Caller identity").setTimeout(30).execute()
+                runActionService.runAction(ari, channel, appName)
             }
 
             override fun onConnectionEvent(event: AriConnectionEvent) {
@@ -97,7 +95,7 @@ class AriConnection(
             override fun onPlaybackFinished(message: PlaybackFinished) {
                 logger.warn("Playback ${message.playback.id} terminou")
                 channelStateCache.removeActionByActionId(message.playback.id)?.let { action ->
-                    runActionService.runAction(ari, action.channel)
+                    runActionService.runAction(ari, action.channel, appName)
                 }
             }
 
@@ -126,7 +124,7 @@ class AriConnection(
 
     private fun messageWithChannelHandler(channel: Channel, ari: ARI) {
         channelStateCache.updateChannel(channel)
-        runActionService.runAction(ari, channel)
+        runActionService.runAction(ari, channel, appName)
     }
 
 }
