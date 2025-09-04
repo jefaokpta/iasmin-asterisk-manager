@@ -1,9 +1,14 @@
 package com.example.iasminasteriskari.ari
 
+import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
+import ch.loway.oss.ari4java.generated.models.Channel
+import ch.loway.oss.ari4java.generated.models.ChannelCallerId
+import ch.loway.oss.ari4java.generated.models.ChannelConnectedLine
 import ch.loway.oss.ari4java.generated.models.ChannelStateChange
+import ch.loway.oss.ari4java.generated.models.ChannelVarset
 import ch.loway.oss.ari4java.generated.models.Message
 import ch.loway.oss.ari4java.generated.models.PlaybackFinished
 import ch.loway.oss.ari4java.generated.models.StasisEnd
@@ -37,7 +42,7 @@ class AriConnection(
 
     @PostConstruct
     fun start() {
-        logger.info("Ari conectando...")
+        logger.info("\uD83D\uDE80 Ari conectando...")
         connect()
     }
 
@@ -52,27 +57,32 @@ class AriConnection(
 
         ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
             override fun onSuccess(message: Message) {
+                //TODO: e se deixar na thread original? testar
                 ariTaskExecutor.execute { super.onSuccess(message) }
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
                 val channel = stasisStart.channel
+                logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
+                ari.channels().setChannelVar(channel.id, "CDR(userfield)").setValue("OUTBOUND").execute()
                 channelStateCache.addChannelState(
                     ChannelState(
                         channel, mutableListOf(
+                            AriAction(ActionEnum.SET_VARIABLE, args = listOf("CONNECTEDLINE(num)", "1132931515")),
+                            AriAction(ActionEnum.SET_VARIABLE, args = listOf("CALLERID(num)", "1001929")),
                             AriAction(ActionEnum.ANSWER),
+//                            AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
                             AriAction(action = ActionEnum.PLAYBACK, args = listOf("sound:tt-monkeys")),
                             AriAction(ActionEnum.HANGUP)
                         )
                     )
                 )
-                logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 runActionService.runAction(ari, channel)
 //                ari.channels().originate("PJSIP/6002").setApp(appName).setCallerId("Caller identity").setTimeout(30).execute()
             }
 
             override fun onConnectionEvent(event: AriConnectionEvent) {
-                logger.info("Conexao event: {}", event)
+                logger.info("Conexao ARI: {}", event)
             }
 
             override fun onFailure(e: RestException?) {
@@ -93,11 +103,30 @@ class AriConnection(
 
             override fun onChannelStateChange(message: ChannelStateChange) {
                 logger.info("${message.channel.id} >> Estado do canal, mudou para ${message.channel.state}")
-                channelStateCache.updateChannel(message.channel)
-                runActionService.runAction(ari, message.channel)
+                messageWithChannelHandler(message.channel, ari)
+            }
+
+            override fun onChannelVarset(message: ChannelVarset) {
+                logger.warn("${message.channel.id} >> Variavel ${message.variable} foi setada para ${message.value}")
+                messageWithChannelHandler(message.channel, ari)
+            }
+
+            override fun onChannelConnectedLine(message: ChannelConnectedLine) {
+                logger.warn("${message.channel.id} >> ConnectedLine atualizado para ${message.channel.connected.number}")
+                messageWithChannelHandler(message.channel, ari)
+            }
+
+            override fun onChannelCallerId(message: ChannelCallerId) {
+                logger.warn("${message.channel.id} >> CallerId atualizado para ${message.channel.caller.number}")
+                messageWithChannelHandler(message.channel, ari)
             }
 
         })
+    }
+
+    private fun messageWithChannelHandler(channel: Channel, ari: ARI) {
+        channelStateCache.updateChannel(channel)
+        runActionService.runAction(ari, channel)
     }
 
 }

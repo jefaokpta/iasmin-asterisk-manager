@@ -26,6 +26,9 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
                     playback -> channelStateCache.setTopAction(channel.id, action.copy(actionId = playback.id))
                 }
             }
+            ActionEnum.SET_VARIABLE -> {
+                ari.channels().setChannelVar(channel.id, action.args[0]).setValue(action.args[1]).execute()
+            }
         }
     }
 }
