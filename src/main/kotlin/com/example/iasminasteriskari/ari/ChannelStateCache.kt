@@ -23,14 +23,17 @@ class ChannelStateCache {
     }
 
     @Synchronized
-    fun nextAction(channelId: String): ChannelState? {
+    fun updateChannelStateAttrs(channelId: String, bridgeId: String, channelBId: String?) {
+        channelStates[channelId] = channelStates[channelId]?.copy(bridgeId = bridgeId, channelBId = channelBId) ?: return
+    }
+
+    @Synchronized
+    fun getChannelState(channelId: String): ChannelState? {
         return channelStates[channelId]
     }
 
     @Synchronized
-    fun removeChannelState(channel: Channel) {
-        channelStates.remove(channel.id)
-    }
+    fun removeChannelState(channel: Channel) = channelStates.remove(channel.id)
 
     @Synchronized
     fun removeActionByActionId(actionId: String): ChannelState? {

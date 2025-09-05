@@ -7,6 +7,7 @@ import ch.loway.oss.ari4java.generated.AriWSHelper
 import ch.loway.oss.ari4java.generated.models.Channel
 import ch.loway.oss.ari4java.generated.models.ChannelCallerId
 import ch.loway.oss.ari4java.generated.models.ChannelConnectedLine
+import ch.loway.oss.ari4java.generated.models.ChannelDestroyed
 import ch.loway.oss.ari4java.generated.models.ChannelStateChange
 import ch.loway.oss.ari4java.generated.models.ChannelVarset
 import ch.loway.oss.ari4java.generated.models.Message
@@ -62,8 +63,8 @@ class AriConnection(
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
-                if (stasisStart.args.contains("dialed")) {
-                    logger.warn("Canal discado")
+                if (stasisStart.args.contains(ActionEnum.DIAL_TRUNK.name)) {
+                    runActionService.dialTrunkHandler(ari, stasisStart)
                     return
                 }
                 val channel = stasisStart.channel
@@ -74,10 +75,9 @@ class AriConnection(
                         peerDDR = stasisStart.args[1],
                         channel = channel,
                         actions = mutableListOf(
-                            AriAction(ActionEnum.ANSWER),
-                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
-//                            AriAction(ActionEnum.DIAL_TRUNK, args = listOf("IASMIN_JUPITER", stasisStart.args[1])),
-                            AriAction(ActionEnum.HANGUP)
+//                            AriAction(ActionEnum.ANSWER),
+//                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
+                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
                         )
                     )
                 )
@@ -94,7 +94,13 @@ class AriConnection(
 
             override fun onStasisEnd(stasisEnd: StasisEnd) {
                 logger.info("${stasisEnd.channel.id} >> Stasis end - Canal: ${stasisEnd.channel.name} desligado")
-                channelStateCache.removeChannelState(stasisEnd.channel)
+                channelStateCache.removeChannelState(stasisEnd.channel).let { action ->
+                    action?.bridgeId?.let { ari.bridges().destroy(it).execute() }
+                }
+            }
+
+            override fun onChannelDestroyed(message: ChannelDestroyed?) {
+                logger.warn("${message?.channel?.id} >> Canal ${message?.channel?.name} foi destruido")
             }
 
             override fun onPlaybackFinished(message: PlaybackFinished) {
@@ -105,7 +111,7 @@ class AriConnection(
             }
 
             override fun onChannelStateChange(message: ChannelStateChange) {
-                logger.info("${message.channel.id} >> Estado do canal, mudou para ${message.channel.state}")
+                logger.info("${message.channel.id} >> Estado do canal ${message.channel.name}, mudou para ${message.channel.state}")
                 messageWithChannelHandler(message.channel, ari)
             }
 

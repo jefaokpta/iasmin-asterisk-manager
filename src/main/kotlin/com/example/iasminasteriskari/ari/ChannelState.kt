@@ -5,7 +5,9 @@ import com.example.iasminasteriskari.ari.actions.AriAction
 
 data class ChannelState(
     val controlNumber: String,
-    val peerDDR: String?,
     val channel: Channel,
-    val actions: MutableList<AriAction>
+    val actions: MutableList<AriAction>,
+    val peerDDR: String? = null,
+    val bridgeId: String? = null,
+    val channelBId: String? = null
 )
