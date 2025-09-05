@@ -1,24 +1,17 @@
 package com.example.iasminasteriskari.ari
 
-import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
 import ch.loway.oss.ari4java.generated.AriWSHelper
-import ch.loway.oss.ari4java.generated.models.Channel
-import ch.loway.oss.ari4java.generated.models.ChannelCallerId
-import ch.loway.oss.ari4java.generated.models.ChannelConnectedLine
-import ch.loway.oss.ari4java.generated.models.ChannelDestroyed
-import ch.loway.oss.ari4java.generated.models.ChannelStateChange
-import ch.loway.oss.ari4java.generated.models.ChannelVarset
-import ch.loway.oss.ari4java.generated.models.Message
-import ch.loway.oss.ari4java.generated.models.PlaybackFinished
-import ch.loway.oss.ari4java.generated.models.StasisEnd
-import ch.loway.oss.ari4java.generated.models.StasisStart
+import ch.loway.oss.ari4java.generated.models.*
 import ch.loway.oss.ari4java.tools.AriConnectionEvent
 import ch.loway.oss.ari4java.tools.RestException
 import com.example.iasminasteriskari.ari.actions.ActionEnum
 import com.example.iasminasteriskari.ari.actions.AriAction
 import com.example.iasminasteriskari.ari.actions.RunActionService
+import com.example.iasminasteriskari.ari.channel.ChannelLegEnum
+import com.example.iasminasteriskari.ari.channel.ChannelState
+import com.example.iasminasteriskari.ari.channel.ChannelStateCache
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -75,9 +68,10 @@ class AriConnection(
                         peerDDR = stasisStart.args[1],
                         channel = channel,
                         actions = mutableListOf(
-//                            AriAction(ActionEnum.ANSWER),
-//                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
-                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
+                            AriAction(ActionEnum.ANSWER),
+                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
+                            AriAction(ActionEnum.HANGUP),
+//                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
                         )
                     )
                 )
@@ -94,13 +88,23 @@ class AriConnection(
 
             override fun onStasisEnd(stasisEnd: StasisEnd) {
                 logger.info("${stasisEnd.channel.id} >> Stasis end - Canal: ${stasisEnd.channel.name} desligado")
-                channelStateCache.removeChannelState(stasisEnd.channel).let { action ->
-                    action?.bridgeId?.let { ari.bridges().destroy(it).execute() }
+                channelStateCache.removeChannelState(stasisEnd.channel)
+            }
+
+            override fun onChannelHangupRequest(message: ChannelHangupRequest) {
+                logger.warn("${message.channel?.id} >> Canal ${message.channel?.name} recebeu um hangup")
+                channelStateCache.getChannelState(message.channel.id)?.let { channelState ->
+                    if (channelState.channelLegEnum == ChannelLegEnum.A) {
+                        channelState.bridgeId?.let { bridgeId -> ari.bridges().destroy(bridgeId).execute()}
+                    }
+                    try {
+                        channelState.connectedChannel?.let { connectedChannel -> ari.channels().hangup(connectedChannel).execute()}
+                    } catch (e: RestException) { logger.error("Canal ${channelState.connectedChannel} já desligado", e) }
                 }
             }
 
-            override fun onChannelDestroyed(message: ChannelDestroyed?) {
-                logger.warn("${message?.channel?.id} >> Canal ${message?.channel?.name} foi destruido")
+            override fun onChannelDestroyed(message: ChannelDestroyed) {
+                logger.warn("${message.channel?.id} >> Canal ${message.channel?.name} foi destruido")
             }
 
             override fun onPlaybackFinished(message: PlaybackFinished) {
@@ -111,31 +115,26 @@ class AriConnection(
             }
 
             override fun onChannelStateChange(message: ChannelStateChange) {
-                logger.info("${message.channel.id} >> Estado do canal ${message.channel.name}, mudou para ${message.channel.state}")
-                messageWithChannelHandler(message.channel, ari)
+                logger.info("${message.channel.id} >> Estado do canal ${message.channel.name}, mudou para: ${message.channel.state}")
+                channelStateCache.getChannelState(message.channel.id)?.let { channelState ->
+                    if (channelState.channelLegEnum == ChannelLegEnum.B) {
+                        ari.channels().answer(channelState.connectedChannel).execute()
+                    }
+                }
             }
 
             override fun onChannelVarset(message: ChannelVarset) {
                 logger.warn("${message.channel.id} >> Variavel ${message.variable} foi setada para ${message.value}")
-                messageWithChannelHandler(message.channel, ari)
             }
 
             override fun onChannelConnectedLine(message: ChannelConnectedLine) {
                 logger.warn("${message.channel.id} >> ConnectedLine atualizado para ${message.channel.connected.number}")
-                messageWithChannelHandler(message.channel, ari)
             }
 
             override fun onChannelCallerId(message: ChannelCallerId) {
                 logger.warn("${message.channel.id} >> CallerId atualizado para ${message.channel.caller.number}")
-                messageWithChannelHandler(message.channel, ari)
             }
 
         })
     }
-
-    private fun messageWithChannelHandler(channel: Channel, ari: ARI) {
-        channelStateCache.updateChannel(channel)
-        runActionService.runAction(ari, channel, appName)
-    }
-
 }

@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari.ari
+package com.example.iasminasteriskari.ari.channel
 
 import ch.loway.oss.ari4java.generated.models.Channel
 import com.example.iasminasteriskari.ari.actions.AriAction
@@ -23,8 +23,8 @@ class ChannelStateCache {
     }
 
     @Synchronized
-    fun updateChannelStateAttrs(channelId: String, bridgeId: String, channelBId: String?) {
-        channelStates[channelId] = channelStates[channelId]?.copy(bridgeId = bridgeId, channelBId = channelBId) ?: return
+    fun updateChannelStateAttrs(channelId: String, bridgeId: String, connectedChannel: String?) {
+        channelStates[channelId] = channelStates[channelId]?.copy(bridgeId = bridgeId, connectedChannel = connectedChannel) ?: return
     }
 
     @Synchronized

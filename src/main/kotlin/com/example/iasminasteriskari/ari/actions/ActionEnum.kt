@@ -5,6 +5,5 @@ enum class ActionEnum {
     HANGUP,
     PLAYBACK,
     SET_VARIABLE,
-    SET_CDR_VARIABLE,
     DIAL_TRUNK
 }
