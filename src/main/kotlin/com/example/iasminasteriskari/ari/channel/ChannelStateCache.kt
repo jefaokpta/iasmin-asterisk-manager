@@ -11,15 +11,11 @@ class ChannelStateCache {
     private val channelStates = mutableMapOf<String, ChannelState>()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    fun getAllChannelStates(): List<ChannelState> = channelStates.values.toList()
+
     @Synchronized
     fun addChannelState(channelState: ChannelState) {
         channelStates[channelState.channel.id] = channelState
-    }
-
-    @Synchronized
-    fun updateChannel(channel: Channel) {
-        val channelState = channelStates[channel.id] ?: return
-        channelStates[channel.id] = channelState.copy(channel = channel)
     }
 
     @Synchronized
