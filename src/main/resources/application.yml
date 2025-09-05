@@ -3,6 +3,7 @@ spring:
     name: iasmin-asterisk-ari
 
 ari:
+#  base-url: "http://localhost:8088"
   base-url: "http://iasmin-pabx.vipsolutions.com.br:8088"
   username: "iasmin"
   password: "iasmin123"

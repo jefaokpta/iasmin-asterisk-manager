@@ -35,18 +35,23 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
             ActionEnum.DIAL_TRUNK -> {
                 val trunkName = action.args[0]
                 ari.channels().setChannelVar(channel.id, "CALLERID(num)").setValue(channelState.peerDDR).execute()
-                val channelB = ari.channels()
-                    .create("PJSIP/103#${channel.dialplan.exten}@${trunkName}", appName)
-                    .setAppArgs("${ActionEnum.DIAL_TRUNK.name},${channel.id},${channelState.peerDDR}")
-                    .setOriginator(channel.id)
-                    .setVariables(mapOf("PJSIP_HEADER(add,P-Asserted-Identity)" to channelState.controlNumber))
-                    .execute()
-                channelStateCache.addChannelState(ChannelState(
-                    controlNumber = channelState.controlNumber,
-                    channel = channelB,
-                    channelLegEnum = ChannelLegEnum.B,
-                    connectedChannel = channel.id,
-                ))
+                try {
+                    val channelB = ari.channels()
+                        .create("PJSIP/103#${channel.dialplan.exten}@${trunkName}", appName)
+                        .setAppArgs("${ActionEnum.DIAL_TRUNK.name},${channel.id},${channelState.peerDDR}")
+                        .setOriginator(channel.id)
+                        .setVariables(mapOf("PJSIP_HEADER(add,P-Asserted-Identity)" to channelState.controlNumber))
+                        .execute()
+                    channelStateCache.addChannelState(ChannelState(
+                        controlNumber = channelState.controlNumber,
+                        channel = channelB,
+                        channelLegEnum = ChannelLegEnum.B,
+                        connectedChannel = channel.id,
+                    ))
+                } catch (e: Exception) {
+                    logger.error("Erro ao criar canal B: ${e.message}", e)
+                    ari.channels().hangup(channel.id).execute()
+                }
             }
         }
     }
@@ -56,6 +61,7 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
         val channelAId = stasisStart.args[1]
         val channelB = stasisStart.channel
         val bridge = ari.bridges().create().setType("mixing").execute()
+        logger.info("${channelB.id} >> Criada bridge id: ${bridge.id}")
         ari.bridges().addChannel(bridge.id, channelAId).execute()
         ari.bridges().addChannel(bridge.id, channelB.id).execute()
         channelStateCache.updateChannelStateAttrs(channelAId, bridge.id, channelB.id)

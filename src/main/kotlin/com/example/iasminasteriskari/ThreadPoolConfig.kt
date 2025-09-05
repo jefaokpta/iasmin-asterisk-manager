@@ -10,8 +10,8 @@ class ThreadPoolConfig {
     @Bean
     fun ariTaskExecutor(): ThreadPoolTaskExecutor {
         val pool = ThreadPoolTaskExecutor()
-        pool.setCorePoolSize(5)
-        pool.setMaxPoolSize(10)
+        pool.corePoolSize = 32
+        pool.maxPoolSize = 64
         pool.setThreadNamePrefix("ARI-")
         return pool
     }

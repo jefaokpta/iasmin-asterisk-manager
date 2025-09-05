@@ -52,7 +52,6 @@ class AriConnection(
 
         ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
             override fun onSuccess(message: Message) {
-                //TODO: e se deixar na thread original? testar carga no SIPP
                 ariTaskExecutor.execute { super.onSuccess(message) }
             }
 
@@ -72,7 +71,8 @@ class AriConnection(
 //                            AriAction(ActionEnum.ANSWER),
 //                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
 //                            AriAction(ActionEnum.HANGUP),
-                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
+//                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
+                            AriAction(ActionEnum.DIAL_TRUNK, listOf("SipTrunk")),
                         )
                     )
                 )
@@ -95,9 +95,11 @@ class AriConnection(
             override fun onChannelHangupRequest(message: ChannelHangupRequest) {
                 logger.warn("${message.channel?.id} >> Canal ${message.channel?.name} recebeu um hangup")
                 channelStateCache.getChannelState(message.channel.id)?.let { channelState ->
-                    if (channelState.channelLegEnum == ChannelLegEnum.A) {
-                        channelState.bridgeId?.let { bridgeId -> ari.bridges().destroy(bridgeId).execute()}
-                    }
+                    try {
+                        if (channelState.channelLegEnum == ChannelLegEnum.A) {
+                            channelState.bridgeId?.let { bridgeId -> ari.bridges().destroy(bridgeId).execute()}
+                        }
+                    } catch (e: RestException) { logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou destruir bridge já destruida") }
                     try {
                         channelState.connectedChannel?.let { connectedChannel -> ari.channels().hangup(connectedChannel).execute()}
                     } catch (e: RestException) { logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou desligar ${channelState.connectedChannel} já desligado") }
