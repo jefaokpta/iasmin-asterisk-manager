@@ -3,6 +3,8 @@ package com.example.iasminasteriskari.ari.actions
 import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.generated.models.Channel
 import ch.loway.oss.ari4java.generated.models.StasisStart
+import com.example.iasminasteriskari.ari.channel.ChannelLegEnum
+import com.example.iasminasteriskari.ari.channel.ChannelState
 import com.example.iasminasteriskari.ari.channel.ChannelStateCache
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -33,19 +35,22 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
             ActionEnum.DIAL_TRUNK -> {
                 val trunkName = action.args[0]
                 ari.channels().setChannelVar(channel.id, "CALLERID(num)").setValue(channelState.peerDDR).execute()
-                ari.channels()
+                val channelB = ari.channels()
                     .create("PJSIP/103#${channel.dialplan.exten}@${trunkName}", appName)
                     .setAppArgs("${ActionEnum.DIAL_TRUNK.name},${channel.id},${channelState.peerDDR}")
                     .setOriginator(channel.id)
                     .setVariables(mapOf("PJSIP_HEADER(add,P-Asserted-Identity)" to channelState.controlNumber))
                     .execute()
+                channelStateCache.addChannelState(ChannelState(
+                    controlNumber = channelState.controlNumber,
+                    channel = channelB,
+                    channelLegEnum = ChannelLegEnum.B,
+                    connectedChannel = channel.id,
+                ))
             }
         }
     }
 
-    //TODO: falta desligar ao canal B desligar
-    //TODO: falta atender
-    //TODO: falta desligar ao canal A desligar
     fun dialTrunkHandler(ari: ARI, stasisStart: StasisStart) {
         logger.warn(stasisStart.args.toString())
         val channelAId = stasisStart.args[1]
