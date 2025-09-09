@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari.ari.actions
+package br.com.iasmin.iasminasteriskari.ari.actions
 
 data class AriAction(
     val type: ActionEnum,

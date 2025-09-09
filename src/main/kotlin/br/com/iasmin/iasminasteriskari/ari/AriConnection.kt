@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari.ari
+package br.com.iasmin.iasminasteriskari.ari
 
 import ch.loway.oss.ari4java.AriFactory
 import ch.loway.oss.ari4java.AriVersion
@@ -6,13 +6,13 @@ import ch.loway.oss.ari4java.generated.AriWSHelper
 import ch.loway.oss.ari4java.generated.models.*
 import ch.loway.oss.ari4java.tools.AriConnectionEvent
 import ch.loway.oss.ari4java.tools.RestException
-import com.example.iasminasteriskari.ari.actions.ActionEnum
-import com.example.iasminasteriskari.ari.actions.AriAction
-import com.example.iasminasteriskari.ari.actions.RunActionService
-import com.example.iasminasteriskari.ari.channel.ChannelLegEnum
-import com.example.iasminasteriskari.ari.channel.ChannelState
-import com.example.iasminasteriskari.ari.channel.ChannelStateCache
-import com.example.iasminasteriskari.ari.channel.ChannelStateEnum
+import br.com.iasmin.iasminasteriskari.ari.actions.ActionEnum
+import br.com.iasmin.iasminasteriskari.ari.actions.AriAction
+import br.com.iasmin.iasminasteriskari.ari.actions.RunActionService
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelLegEnum
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelState
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateEnum
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

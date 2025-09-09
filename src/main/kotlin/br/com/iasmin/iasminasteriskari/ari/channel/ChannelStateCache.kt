@@ -1,7 +1,7 @@
-package com.example.iasminasteriskari.ari.channel
+package br.com.iasmin.iasminasteriskari.ari.channel
 
+import br.com.iasmin.iasminasteriskari.ari.actions.AriAction
 import ch.loway.oss.ari4java.generated.models.Channel
-import com.example.iasminasteriskari.ari.actions.AriAction
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

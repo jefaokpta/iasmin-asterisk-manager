@@ -1,6 +1,6 @@
-package com.example.iasminasteriskari.controller
+package br.com.iasmin.iasminasteriskari.controller
 
-import com.example.iasminasteriskari.ari.channel.ChannelStateCache
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

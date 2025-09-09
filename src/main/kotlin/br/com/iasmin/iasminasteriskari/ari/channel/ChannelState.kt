@@ -1,7 +1,7 @@
-package com.example.iasminasteriskari.ari.channel
+package br.com.iasmin.iasminasteriskari.ari.channel
 
+import br.com.iasmin.iasminasteriskari.ari.actions.AriAction
 import ch.loway.oss.ari4java.generated.models.Channel
-import com.example.iasminasteriskari.ari.actions.AriAction
 
 data class ChannelState(
     val controlNumber: String,

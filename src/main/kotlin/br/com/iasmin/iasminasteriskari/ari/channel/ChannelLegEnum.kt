@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari.ari.channel
+package br.com.iasmin.iasminasteriskari.ari.channel
 
 enum class ChannelLegEnum {
     A,

@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari.ari.actions
+package br.com.iasmin.iasminasteriskari.ari.actions
 
 enum class ActionEnum {
     ANSWER,

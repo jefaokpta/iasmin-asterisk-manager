@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari
+package br.com.iasmin.iasminasteriskari
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
@@ -9,5 +9,5 @@ import org.springframework.boot.runApplication
 class IasminAsteriskAriApplication
 
 fun main(args: Array<String>) {
-    runApplication<IasminAsteriskAriApplication>(*args)
+    runApplication<br.com.iasmin.iasminasteriskari.IasminAsteriskAriApplication>(*args)
 }

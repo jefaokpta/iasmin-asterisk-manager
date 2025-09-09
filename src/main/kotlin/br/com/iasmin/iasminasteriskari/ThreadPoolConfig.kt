@@ -1,4 +1,4 @@
-package com.example.iasminasteriskari
+package br.com.iasmin.iasminasteriskari
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

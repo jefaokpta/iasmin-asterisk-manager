@@ -1,13 +1,14 @@
-package com.example.iasminasteriskari.ari.actions
+package br.com.iasmin.iasminasteriskari.ari.actions
 
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelLegEnum
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelState
+import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
 import ch.loway.oss.ari4java.ARI
 import ch.loway.oss.ari4java.generated.models.Channel
 import ch.loway.oss.ari4java.generated.models.StasisStart
-import com.example.iasminasteriskari.ari.channel.ChannelLegEnum
-import com.example.iasminasteriskari.ari.channel.ChannelState
-import com.example.iasminasteriskari.ari.channel.ChannelStateCache
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import kotlin.collections.removeFirstOrNull
 
 @Service
 class RunActionService(private val channelStateCache: ChannelStateCache) {
@@ -42,12 +43,14 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
                         .setOriginator(channel.id)
                         .setVariables(mapOf("PJSIP_HEADER(add,P-Asserted-Identity)" to channelState.controlNumber))
                         .execute()
-                    channelStateCache.addChannelState(ChannelState(
-                        controlNumber = channelState.controlNumber,
-                        channel = channelB,
-                        channelLegEnum = ChannelLegEnum.B,
-                        connectedChannel = channel.id,
-                    ))
+                    channelStateCache.addChannelState(
+                        ChannelState(
+                            controlNumber = channelState.controlNumber,
+                            channel = channelB,
+                            channelLegEnum = ChannelLegEnum.B,
+                            connectedChannel = channel.id,
+                        )
+                    )
                 } catch (e: Exception) {
                     logger.error("Erro ao criar canal B: ${e.message}", e)
                     ari.channels().hangup(channel.id).execute()
