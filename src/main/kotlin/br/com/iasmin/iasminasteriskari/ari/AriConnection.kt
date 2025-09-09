@@ -40,7 +40,7 @@ class AriConnection(
     private var outboundAppName: String = ""
 
     @PostConstruct
-    fun start() {
+    fun init() {
         logger.info("\uD83D\uDE80 Ari conectando $outboundAppName...")
         connectOutbound()
     }

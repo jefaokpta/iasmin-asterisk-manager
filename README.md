@@ -44,6 +44,7 @@ Este README foi escrito para que um humano ou um agente de IA consiga instalar, 
 ## Tecnologias
 - Spring Boot — Framework principal: https://spring.io/projects/spring-boot
 - ari4java — Cliente ARI para Asterisk: https://github.com/ari4java/ari4java/wiki/Getting-Started
+- asterisk-java - Gestão do Asterisk via AMI: https://github.com/asterisk-java/asterisk-java
 - Jackson Kotlin — Serialização JSON.
 - Logback — Logging.
 - JUnit 5 — Testes.
