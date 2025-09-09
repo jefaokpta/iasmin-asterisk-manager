@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: iasmin-asterisk-ari-test
+
+# Beans de conexão estão desativados no perfil de teste via @Profile("!test").
+# Mesmo assim, definimos valores dummy para evitar falhas de placeholder em outros serviços.
+
+ari:
+  host: http://localhost:8088
+  user: test
+  password: test
+  outbound-app-name: test-outbound
+  inbound-app-name: test-inbound
+
+ami:
+  host: 127.0.0.1
+  port: 5038
+  user: test
+  password: test
+
+asterisk:
+  config: /tmp/asterisk.conf
+
+pabx:
+  trunk: TestTrunk
+  tech-prefix: 0
+
+audio:
+  record: /tmp/records
+  moh: default
+
+iasmin:
+  backend-api: http://localhost:18080
+
+jwt:
+  secret: test-secret

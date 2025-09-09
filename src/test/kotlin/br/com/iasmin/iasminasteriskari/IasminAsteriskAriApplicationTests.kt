@@ -2,16 +2,10 @@ package br.com.iasmin.iasminasteriskari
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 
-@SpringBootTest(
-    properties = [
-        "ari.enabled=false",
-        "ari.base-url=http://localhost:8088/ari",
-        "ari.username=test",
-        "ari.password=test",
-        "ari.app-name=test-app"
-    ]
-)
+@ActiveProfiles("test")
+@SpringBootTest
 class IasminAsteriskAriApplicationTests {
 
     @Test

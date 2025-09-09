@@ -16,10 +16,12 @@ import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateEnum
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("!test")
 class AriConnection(
     private val ariTaskExecutor: ThreadPoolTaskExecutor,
     private val channelStateCache: ChannelStateCache,
