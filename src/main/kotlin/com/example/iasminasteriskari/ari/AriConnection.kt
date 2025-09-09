@@ -26,12 +26,16 @@ class AriConnection(
     private val runActionService: RunActionService
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
+
     @Value("\${ari.base-url}")
     private var urlBase: String = ""
+
     @Value("\${ari.username}")
     private var username: String = ""
+
     @Value("\${ari.password}")
     private var password: String = ""
+
     @Value("\${ari.app-name}")
     private var appName: String = ""
 
@@ -58,6 +62,10 @@ class AriConnection(
             override fun onStasisStart(stasisStart: StasisStart) {
                 if (stasisStart.args.contains(ActionEnum.DIAL_TRUNK.name)) {
                     runActionService.dialTrunkHandler(ari, stasisStart)
+                    return
+                }
+                if (stasisStart.args.contains("record")) {
+                    recordChannel(ari, stasisStart.channel.id, stasisStart.args[1])
                     return
                 }
                 val channel = stasisStart.channel
@@ -97,12 +105,18 @@ class AriConnection(
                 channelStateCache.getChannelState(message.channel.id)?.let { channelState ->
                     try {
                         if (channelState.channelLegEnum == ChannelLegEnum.A) {
-                            channelState.bridgeId?.let { bridgeId -> ari.bridges().destroy(bridgeId).execute()}
+                            channelState.bridgeId?.let { bridgeId -> ari.bridges().destroy(bridgeId).execute() }
                         }
-                    } catch (e: RestException) { logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou destruir bridge já destruida") }
+                    } catch (e: RestException) {
+                        logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou destruir bridge já destruida")
+                    }
                     try {
-                        channelState.connectedChannel?.let { connectedChannel -> ari.channels().hangup(connectedChannel).execute()}
-                    } catch (e: RestException) { logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou desligar ${channelState.connectedChannel} já desligado") }
+                        channelState.connectedChannel?.let { connectedChannel ->
+                            ari.channels().hangup(connectedChannel).execute()
+                        }
+                    } catch (e: RestException) {
+                        logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou desligar ${channelState.connectedChannel} já desligado")
+                    }
                 }
             }
 
@@ -120,8 +134,24 @@ class AriConnection(
             override fun onChannelStateChange(message: ChannelStateChange) {
                 logger.info("${message.channel.id} >> Estado do canal ${message.channel.name}, mudou para: ${message.channel.state}")
                 channelStateCache.getChannelState(message.channel.id)?.let { channelState ->
-                    if (channelState.channelLegEnum == ChannelLegEnum.B && message.channel.state === ChannelStateEnum.UP.name) {
-                        ari.channels().answer(channelState.connectedChannel).execute()
+                    if (channelState.channelLegEnum === ChannelLegEnum.B &&
+                        message.channel.state.equals(ChannelStateEnum.UP.name, ignoreCase = true)
+                    ) {
+                        channelStateCache.getChannelState(channelState.connectedChannel!!)?.let { connectedChannel ->
+                            recordBridge(ari, connectedChannel.bridgeId!!, connectedChannel.channel.id)
+                            createSnoopChannelToRecord(
+                                ari,
+                                connectedChannel.channel.id,
+                                appName,
+                                createRecordName(connectedChannel.channel.id, ChannelLegEnum.A)
+                            )
+                            createSnoopChannelToRecord(
+                                ari,
+                                channelState.channel.id,
+                                appName,
+                                createRecordName(connectedChannel.channel.id, ChannelLegEnum.B)
+                            )
+                        }
                     }
                 }
             }

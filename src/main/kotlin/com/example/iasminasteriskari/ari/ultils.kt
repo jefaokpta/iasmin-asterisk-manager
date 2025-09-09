@@ -1,0 +1,24 @@
+package com.example.iasminasteriskari.ari
+
+import ch.loway.oss.ari4java.ARI
+import com.example.iasminasteriskari.ari.channel.ChannelLegEnum
+
+fun createRecordName(channelId: String, channelLegEnum: ChannelLegEnum): String {
+    return "${channelId.replace(".", "-")}-${channelLegEnum.name}"
+}
+
+fun recordBridge(ari: ARI, bridgeId: String, channelId: String){
+    ari.bridges().record(bridgeId, createRecordName(channelId, ChannelLegEnum.MIXED), "sln").execute()
+}
+
+fun createSnoopChannelToRecord(ari: ARI, channelId: String, appName: String, recordName: String){
+    ari.channels().snoopChannel(channelId, appName)
+        .setAppArgs("record,$recordName")
+        .setSpy("in")
+        .setWhisper("none")
+        .execute()
+}
+
+fun recordChannel(ari: ARI, channelId: String, recordName: String){
+    ari.channels().record(channelId, recordName, "sln").execute()
+}
