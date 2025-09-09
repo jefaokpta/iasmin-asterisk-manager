@@ -1,0 +1,20 @@
+[Unit]
+Description=GERENCIA CHAMADAS, CDR e ANTI-INVASAO
+After=network.target
+#StartLimitIntervalSec=300
+#StartLimitBurst=5
+
+[Service]
+StandardOutput=journal
+StandardError=journal
+#StandardOutput=null
+WorkingDirectory=/opt/iasmin-asterisk-ari
+ExecStart=/opt/jdk-21/bin/java -jar iasmin-asterisk-ari.jar
+SuccessExitStatus=143
+#Restart=always
+#RestartSec=30
+
+EnvironmentFile=/opt/iasmin-asterisk-ari/.env
+
+[Install]
+WantedBy=multi-user.target
