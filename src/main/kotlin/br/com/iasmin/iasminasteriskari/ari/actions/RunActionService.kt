@@ -35,10 +35,11 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
             }
             ActionEnum.DIAL_TRUNK -> {
                 val trunkName = action.args[0]
+                val techPrefix = action.args[1]
                 ari.channels().setChannelVar(channel.id, "CALLERID(num)").setValue(channelState.peerDDR).execute()
                 try {
                     val channelB = ari.channels()
-                        .create("PJSIP/103#${channel.dialplan.exten}@${trunkName}", appName)
+                        .create("PJSIP/$techPrefix${channel.dialplan.exten}@$trunkName", appName)
                         .setAppArgs("${ActionEnum.DIAL_TRUNK.name},${channel.id},${channelState.peerDDR}")
                         .setOriginator(channel.id)
                         .setVariables(mapOf("PJSIP_HEADER(add,P-Asserted-Identity)" to channelState.controlNumber))

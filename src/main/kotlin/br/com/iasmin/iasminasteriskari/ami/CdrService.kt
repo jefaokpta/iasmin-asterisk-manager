@@ -24,13 +24,15 @@ open class CdrService {
 
     fun newCdr(cdrEvent: CdrEvent) {
         if (cdrEvent.destination == "s" || cdrEvent.destination == "*12345" || cdrEvent.destination.length < 5) return
+        val cdr = Cdr(cdrEvent)
+        logger.warn(cdr.toString())
         if (cdrEvent.billableSeconds > 0){
-            val cdr = Cdr(cdrEvent)
             convertAudioToMp3(cdr)
             sendCdrToBackend(cdr)
+            return
         }
         // TODO: tratar CDRs de entrada adicionando peer = assistant-${cdr.company}
-        //TODO: sendCdrToBackend(cdr)
+        sendCdrToBackend(cdr)
     }
     
     private fun sendCdrToBackend(cdr: Cdr) {

@@ -41,6 +41,12 @@ class AriConnection(
     @Value("\${ari.outbound-app-name}")
     private var outboundAppName: String = ""
 
+    @Value("\${pabx.trunk}")
+    private var PABX_TRUNK: String = ""
+
+    @Value("\${pabx.tech-prefix}")
+    private var TECH_PREFIX: String = ""
+
     @PostConstruct
     fun init() {
         logger.info("\uD83D\uDE80 Ari conectando $outboundAppName...")
@@ -70,6 +76,7 @@ class AriConnection(
                     recordChannel(ari, stasisStart.channel.id, stasisStart.args[1])
                     return
                 }
+                //TODO: validar JWT
                 val channel = stasisStart.channel
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 channelStateCache.addChannelState(
@@ -82,7 +89,7 @@ class AriConnection(
 //                            AriAction(ActionEnum.PLAYBACK, args = listOf("sound:hello-world")),
 //                            AriAction(ActionEnum.HANGUP),
 //                            AriAction(ActionEnum.DIAL_TRUNK, listOf("IASMIN_JUPITER")),
-                            AriAction(ActionEnum.DIAL_TRUNK, listOf("SipTrunk")),
+                            AriAction(ActionEnum.DIAL_TRUNK, listOf(PABX_TRUNK, TECH_PREFIX)),
                         )
                     )
                 )

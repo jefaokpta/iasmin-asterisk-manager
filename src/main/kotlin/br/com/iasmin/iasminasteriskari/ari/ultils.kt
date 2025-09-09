@@ -4,7 +4,7 @@ import br.com.iasmin.iasminasteriskari.ari.channel.ChannelLegEnum
 import ch.loway.oss.ari4java.ARI
 
 fun createRecordName(channelId: String, channelLegEnum: ChannelLegEnum): String {
-    return "${channelId.replace(".", "-")}-${channelLegEnum.name}"
+    return "${channelId.replace(".", "-")}-${channelLegEnum.name.lowercase()}"
 }
 
 fun recordBridge(ari: ARI, bridgeId: String, channelId: String){
