@@ -27,34 +27,34 @@ class AriConnection(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    @Value("\${ari.base-url}")
-    private var urlBase: String = ""
+    @Value("\${ari.host}")
+    private var host: String = ""
 
-    @Value("\${ari.username}")
+    @Value("\${ari.user}")
     private var username: String = ""
 
     @Value("\${ari.password}")
     private var password: String = ""
 
-    @Value("\${ari.app-name}")
-    private var appName: String = ""
+    @Value("\${ari.outbound-app-name}")
+    private var outboundAppName: String = ""
 
     @PostConstruct
     fun start() {
-        logger.info("\uD83D\uDE80 Ari conectando...")
-        connect()
+        logger.info("\uD83D\uDE80 Ari conectando $outboundAppName...")
+        connectOutbound()
     }
 
-    private fun connect() {
+    private fun connectOutbound() {
         val ari = AriFactory.nettyHttp(
-            urlBase,
+            host,
             username,
             password,
             AriVersion.ARI_8_0_0,
-            appName
+            outboundAppName
         )
 
-        ari.events().eventWebsocket(appName).execute(object : AriWSHelper() {
+        ari.events().eventWebsocket(outboundAppName).execute(object : AriWSHelper() {
             override fun onSuccess(message: Message) {
                 ariTaskExecutor.execute { super.onSuccess(message) }
             }
@@ -84,7 +84,7 @@ class AriConnection(
                         )
                     )
                 )
-                runActionService.runAction(ari, channel, appName)
+                runActionService.runAction(ari, channel, outboundAppName)
             }
 
             override fun onConnectionEvent(event: AriConnectionEvent) {
@@ -127,7 +127,7 @@ class AriConnection(
             override fun onPlaybackFinished(message: PlaybackFinished) {
                 logger.warn("Playback ${message.playback.id} terminou")
                 channelStateCache.removeActionByActionId(message.playback.id)?.let { action ->
-                    runActionService.runAction(ari, action.channel, appName)
+                    runActionService.runAction(ari, action.channel, outboundAppName)
                 }
             }
 
@@ -142,13 +142,13 @@ class AriConnection(
                             createSnoopChannelToRecord(
                                 ari,
                                 connectedChannel.channel.id,
-                                appName,
+                                outboundAppName,
                                 createRecordName(connectedChannel.channel.id, ChannelLegEnum.A)
                             )
                             createSnoopChannelToRecord(
                                 ari,
                                 channelState.channel.id,
-                                appName,
+                                outboundAppName,
                                 createRecordName(connectedChannel.channel.id, ChannelLegEnum.B)
                             )
                         }

@@ -3,8 +3,32 @@ spring:
     name: iasmin-asterisk-ari
 
 ari:
-#  base-url: "http://localhost:8088"
-  base-url: "http://iasmin-pabx.vipsolutions.com.br:8088"
-  username: "iasmin"
-  password: "iasmin123"
-  app-name: "test-outbound-router-call-app"
+#  host: "http://localhost:8088"
+  host: "${ARI_HOST}"
+  user: "${ARI_USER}"
+  password: "${ARI_PASSWORD}"
+  outbound-app-name: "${ARI_APP_OUTBOUND_NAME}"
+  inbound-app-name: "${ARI_APP_INBOUND_NAME}"
+
+ami:
+  host: "${AMI_HOST}"
+  port: "${AMI_PORT}"
+  user: "${AMI_USER}"
+  password: "${AMI_PASSWORD}"
+
+asterisk:
+  config: "${ASTERISK_CONFIG}"
+
+pabx:
+  trunk: "${PABX_TRUNK}"
+  tech-prefix: "${PABX_TECH_PREFIX}"
+
+audio:
+  record: "${AUDIO_RECORD}"
+  moh: "${AUDIO_MOH}"
+
+iasmin:
+  backend-api: "${IASMIN_BACKEND_API}"
+
+jwt:
+  secret: "${JWT_SECRET}"
