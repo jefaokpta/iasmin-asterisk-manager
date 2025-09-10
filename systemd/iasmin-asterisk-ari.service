@@ -10,6 +10,7 @@ StandardError=journal
 #StandardOutput=null
 WorkingDirectory=/opt/iasmin-asterisk-ari
 ExecStart=/opt/jdk-21/bin/java -jar iasmin-asterisk-ari.jar
+## // "-XX:+UseSerialGC", "-XX:ActiveProcessorCount=1",
 SuccessExitStatus=143
 #Restart=always
 #RestartSec=30

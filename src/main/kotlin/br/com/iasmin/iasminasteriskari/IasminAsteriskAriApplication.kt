@@ -1,13 +1,23 @@
 package br.com.iasmin.iasminasteriskari
 
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
+import java.util.concurrent.ForkJoinPool
 
 @SpringBootApplication
-@ConfigurationPropertiesScan
 class IasminAsteriskAriApplication
 
 fun main(args: Array<String>) {
-    runApplication<br.com.iasmin.iasminasteriskari.IasminAsteriskAriApplication>(*args)
+    runApplication<IasminAsteriskAriApplication>(*args)
+
+    val log = LoggerFactory.getLogger(IasminAsteriskAriApplication::class.java)
+
+    log.info("FREE HEAP SIZE: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} MB")
+    log.info("MAX HEAP SIZE: ${Runtime.getRuntime().maxMemory() / 1024 / 1024} MB")
+    log.info("TOTAL HEAP SIZE: ${Runtime.getRuntime().totalMemory() / 1024 / 1024} MB")
+    log.info("CPUs DISPONIVEIS: ${Runtime.getRuntime().availableProcessors()}")
+    log.info("CommonPool Parallelism: " + ForkJoinPool.commonPool().parallelism)
+    log.info("CommonPool Common Parallelism: " + ForkJoinPool.getCommonPoolParallelism())
+
 }
