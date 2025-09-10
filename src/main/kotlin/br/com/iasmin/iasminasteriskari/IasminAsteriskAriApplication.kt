@@ -13,9 +13,9 @@ fun main(args: Array<String>) {
 
     val log = LoggerFactory.getLogger(IasminAsteriskAriApplication::class.java)
 
-    log.info("FREE HEAP SIZE: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} MB")
     log.info("MAX HEAP SIZE: ${Runtime.getRuntime().maxMemory() / 1024 / 1024} MB")
-    log.info("TOTAL HEAP SIZE: ${Runtime.getRuntime().totalMemory() / 1024 / 1024} MB")
+    log.info("USED HEAP SIZE: ${Runtime.getRuntime().totalMemory() / 1024 / 1024} MB")
+    log.info("FREE HEAP SIZE: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} MB")
     log.info("CPUs DISPONIVEIS: ${Runtime.getRuntime().availableProcessors()}")
     log.info("CommonPool Parallelism: " + ForkJoinPool.commonPool().parallelism)
     log.info("CommonPool Common Parallelism: " + ForkJoinPool.getCommonPoolParallelism())

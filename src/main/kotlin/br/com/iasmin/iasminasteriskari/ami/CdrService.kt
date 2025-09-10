@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.http.client.SimpleClientHttpRequestFactory
+import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -24,20 +25,7 @@ open class CdrService {
     @Value("\${audio.record}")
     private lateinit var AUDIO_RECORD: String
 
-    private val TIMEOUT = 30
-
-
-    private val restTemplate: RestTemplate by lazy {
-        RestTemplate().apply {
-            setRequestFactory(
-                SimpleClientHttpRequestFactory().apply {
-                    setConnectTimeout(TIMEOUT)
-                    setReadTimeout(TIMEOUT)
-                }
-            )
-        }
-    }
-
+    private val TIMEOUT = Duration.ofSeconds(10)
 
 
     fun newCdr(cdrEvent: CdrEvent) {
@@ -60,8 +48,7 @@ open class CdrService {
     private fun sendCdrToBackend(cdr: Cdr) {
         val restTemplate = RestTemplate()
         restTemplate.requestFactory = SimpleClientHttpRequestFactory().apply {
-            setConnectTimeout(30000)
-            setReadTimeout(30000)
+            setConnectTimeout(TIMEOUT)
         }
         restTemplate.postForObject("$BACKEND_API/cdr", cdr, Void::class.java)
     }
