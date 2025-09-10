@@ -10,13 +10,16 @@ import org.springframework.stereotype.Service
  */
 
 @Service
-class AmiEventHandler(private val cdrService: CdrService): ManagerEventListener {
+class AmiEventHandler(
+    private val cdrService: CdrService,
+    private val antiInvasionService: AntiInvasionService,
+): ManagerEventListener {
 
     override fun onManagerEvent(event: ManagerEvent) {
 //        println(event)
         when(event) {
             is CdrEvent -> cdrService.newCdr(event)
-//            is InvalidAccountId -> this.blockIps(event.remoteAddress.split("/")[2])
+            is InvalidAccountId -> antiInvasionService.antiInvasion(event)
 //            is InvalidPasswordEvent -> this.blockIps(event.remoteAddress.split("/")[2])
         }
     }
