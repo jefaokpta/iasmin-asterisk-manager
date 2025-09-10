@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Jefferson A. Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -25,14 +27,18 @@ open class CdrService {
     fun newCdr(cdrEvent: CdrEvent) {
         if (cdrEvent.destination == "s" || cdrEvent.destination == "*12345" || cdrEvent.destination.length < 5) return
         val cdr = Cdr(cdrEvent)
-        logger.warn(cdr.toString())
-        if (cdrEvent.billableSeconds > 0){
-            convertAudioToMp3(cdr)
+        val task = Executors.newVirtualThreadPerTaskExecutor()
+        task.submit {
+            TimeUnit.SECONDS.sleep(1)
+            if (cdrEvent.billableSeconds > 0) {
+                convertAudioToMp3(cdr)
+                sendCdrToBackend(cdr)
+                return@submit
+            }
+            // TODO: tratar CDRs de entrada adicionando peer = assistant-${cdr.company}
             sendCdrToBackend(cdr)
-            return
         }
-        // TODO: tratar CDRs de entrada adicionando peer = assistant-${cdr.company}
-        sendCdrToBackend(cdr)
+        task.shutdown()
     }
     
     private fun sendCdrToBackend(cdr: Cdr) {
