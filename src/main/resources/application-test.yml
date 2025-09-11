@@ -1,6 +1,9 @@
 spring:
   application:
     name: iasmin-asterisk-ari-test
+  threads:
+    virtual:
+      enabled: true
 
 # Beans de conexão estão desativados no perfil de teste via @Profile("!test").
 # Mesmo assim, definimos valores dummy para evitar falhas de placeholder em outros serviços.

@@ -1,6 +1,9 @@
 spring:
   application:
     name: iasmin-asterisk-ari
+  threads:
+    virtual:
+      enabled: true
 
 ari:
   host: "${ARI_HOST}"
