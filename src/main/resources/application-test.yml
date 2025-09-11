@@ -22,7 +22,7 @@ ami:
   password: test
 
 asterisk:
-  config: /tmp/asterisk.conf
+  config: /tmp
 
 pabx:
   trunk: TestTrunk

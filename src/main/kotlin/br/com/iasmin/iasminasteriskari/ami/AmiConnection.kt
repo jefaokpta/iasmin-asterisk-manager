@@ -3,6 +3,9 @@ package br.com.iasmin.iasminasteriskari.ami
 import jakarta.annotation.PostConstruct
 import org.asteriskjava.manager.ManagerConnection
 import org.asteriskjava.manager.ManagerConnectionFactory
+import org.asteriskjava.manager.action.GetVarAction
+import org.asteriskjava.manager.action.ManagerAction
+import org.asteriskjava.manager.response.ManagerResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -22,7 +25,7 @@ class AmiConnection(private val amiEventHandler: AmiEventHandler) {
     @Value("\${ami.password}")
     private var password: String = ""
 
-    private var ami: ManagerConnection? = null
+    private var managerConnection: ManagerConnection? = null
 
     @PostConstruct
     fun init() {
@@ -31,8 +34,8 @@ class AmiConnection(private val amiEventHandler: AmiEventHandler) {
     }
 
     private fun connectManager(): ManagerConnection {
-        if (ami == null) {
-            ami = ManagerConnectionFactory(
+        if (managerConnection == null) {
+            managerConnection = ManagerConnectionFactory(
                 host,
                 user,
                 password
@@ -41,8 +44,20 @@ class AmiConnection(private val amiEventHandler: AmiEventHandler) {
                 login()
             }
         }
-        return ami!!
+        return managerConnection!!
     }
 
-    fun ami() = connectManager()
+    fun sendActionAsync(action: ManagerAction) {
+        val ami = managerConnection ?: connectManager()
+        ami.sendAction(action){
+            println("AMI ASYNC ACTION RETORNO: $it")
+        }
+    }
+
+    fun getVariableAsync(channel: String, variable: String, callback: (ManagerResponse) -> Unit) {
+        val ami = managerConnection ?: connectManager()
+        ami.sendAction(GetVarAction(channel, variable)){
+            callback(it)
+        }
+    }
 }
