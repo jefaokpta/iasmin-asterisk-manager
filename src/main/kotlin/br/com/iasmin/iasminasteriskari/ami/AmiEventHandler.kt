@@ -19,8 +19,8 @@ class AmiEventHandler(
 //        println(event)
         when(event) {
             is CdrEvent -> cdrService.newCdr(event)
-            is InvalidAccountId -> antiInvasionService.antiInvasion(event)
-//            is InvalidPasswordEvent -> this.blockIps(event.remoteAddress.split("/")[2])
+            is InvalidAccountId -> antiInvasionService.antiInvasion(Invader(event))
+            is ChallengeResponseFailedEvent -> antiInvasionService.antiInvasion(Invader(event))
         }
     }
 

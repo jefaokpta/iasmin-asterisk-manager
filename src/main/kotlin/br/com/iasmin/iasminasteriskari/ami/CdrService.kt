@@ -51,6 +51,7 @@ open class CdrService {
             setConnectTimeout(TIMEOUT)
         }
         restTemplate.postForObject("$BACKEND_API/cdr", cdr, Void::class.java)
+        logger.info("${cdr.uniqueId} >> Enviado CDR para backend")
     }
 
     internal fun convertAudioToMp3(cdr: Cdr){

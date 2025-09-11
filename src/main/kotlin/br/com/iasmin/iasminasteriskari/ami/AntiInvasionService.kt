@@ -1,6 +1,5 @@
 package br.com.iasmin.iasminasteriskari.ami
 
-import org.asteriskjava.manager.event.InvalidAccountId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
@@ -22,18 +21,18 @@ class AntiInvasionService {
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val BLOCKED_FILE = "/tmp/blocked_ips.bin"
 
-    fun antiInvasion(invalidAccountId: InvalidAccountId) {
-        val ip = invalidAccountId.remoteAddress.split("/")[2]
-        if (invaders.containsKey(ip)) {
-            blockOrSumInvader(invaders.getValue(ip))
+    fun antiInvasion(invader: Invader) {
+        if (invaders.containsKey(invader.ip)) {
+            blockOrSumInvader(invaders.getValue(invader.ip))
             return
         }
-        invaders[ip] = Invader(invalidAccountId)
+        invaders[invader.ip] = invader
     }
 
     private fun blockOrSumInvader(invader: Invader) {
         if (invader.attempts > 5) {
             if (LocalDateTime.now().minusMinutes(1).isBefore(invader.firstAttempt)) {
+                logger.info("Capturado IP ${invader.ip} para bloqueio")
                 blockedInvaders[invader.ip] = invader
                 return
             }
@@ -53,7 +52,6 @@ class AntiInvasionService {
                 return
             }
         }
-        logger.info("Bloqueando novos IPs")
         val fos = FileOutputStream(BLOCKED_FILE)
         val oos = ObjectOutputStream(fos)
         val blockedIps = blockedInvaders.keys.toSet()

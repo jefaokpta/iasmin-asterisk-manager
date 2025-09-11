@@ -1,5 +1,6 @@
 package br.com.iasmin.iasminasteriskari.ami
 
+import org.asteriskjava.manager.event.ChallengeResponseFailedEvent
 import org.asteriskjava.manager.event.InvalidAccountId
 import java.time.LocalDateTime
 
@@ -18,4 +19,11 @@ data class Invader(
         attempts = 0,
         firstAttempt = LocalDateTime.now()
     )
+
+    constructor(challengeResponseFailedEvent: ChallengeResponseFailedEvent) : this(
+        ip = challengeResponseFailedEvent.remoteAddress.split("/")[2],
+        attempts = 0,
+        firstAttempt = LocalDateTime.now()
+    )
+
 }

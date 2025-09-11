@@ -15,35 +15,37 @@ class AntiInvasionServiceTest {
         val service = AntiInvasionService()
         val ipPort = "x/y/10.0.0.1" // will extract index [2] -> 10.0.0.1:5060
         val event = newInvalidAccountId(ipPort)
+        val invader = Invader(event)
 
         // 1st call -> registers invader with attempts=0
-        service.antiInvasion(event)
+        service.antiInvasion(invader)
         // Up to threshold (attempts <= 5) shouldn't be blocked
-        repeat(5) { service.antiInvasion(event) } // now internal attempts will be 5
+        repeat(5) { service.antiInvasion(invader) } // now internal attempts will be 5
         assertFalse(isBlocked(service, "10.0.0.1"), "Should not be blocked at 5 attempts")
 
         // Next call increments to 6 (still not blocking yet according to current logic)
-        service.antiInvasion(event)
+        service.antiInvasion(invader)
         assertFalse(isBlocked(service, "10.0.0.1"), "Should not be blocked immediately when attempts becomes 6")
 
         // Next call sees attempts > 5 and should block because it's within 1 minute window
-        service.antiInvasion(event)
+        service.antiInvasion(invader)
         assertTrue(isBlocked(service, "10.0.0.1"), "Should be blocked after more than 5 attempts within 1 minute")
     }
     @Test
     fun `mais de 5 tentativas nao deve bloquear se passar mais de 1 minuto`() {
         val service = AntiInvasionService()
         val event = newInvalidAccountId("x/y/10.0.0.1")
-        service.antiInvasion(event)
-        service.antiInvasion(event)
-        service.antiInvasion(event)
-        service.antiInvasion(event)
-        service.antiInvasion(event)
+        val invader = Invader(event)
+        service.antiInvasion(invader)
+        service.antiInvasion(invader)
+        service.antiInvasion(invader)
+        service.antiInvasion(invader)
+        service.antiInvasion(invader)
         assertFalse(isBlocked(service, "10.0.0.1"), "Should not be blocked immediately when attempts becomes 6")
         Thread.sleep(61000)
-        service.antiInvasion(event)
+        service.antiInvasion(invader)
         assertFalse(isBlocked(service, "10.0.0.1"), "nao deve ser bloqueado se passar mais de 1 minuto")
-        service.antiInvasion(event)
+        service.antiInvasion(invader)
         assertFalse(isBlocked(service, "10.0.0.1"), "nao deve ser bloqueado se passar mais de 1 minuto")
     }
 
