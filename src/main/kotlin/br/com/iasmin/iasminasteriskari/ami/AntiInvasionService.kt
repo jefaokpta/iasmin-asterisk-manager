@@ -47,10 +47,7 @@ class AntiInvasionService {
             val fis = FileInputStream(BLOCKED_FILE)
             val ois = ObjectInputStream(fis)
             val blockedIps: Set<String> = ois.readObject() as Set<String>
-            if (blockedIps == blockedInvaders.keys.toSet()) {
-                logger.info("Nenhum IP novo para bloquear, não vou salvar")
-                return
-            }
+            if (blockedIps == blockedInvaders.keys.toSet()) return
         }
         val fos = FileOutputStream(BLOCKED_FILE)
         val oos = ObjectOutputStream(fos)
