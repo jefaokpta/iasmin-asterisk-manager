@@ -3,9 +3,11 @@ package br.com.iasmin.iasminasteriskari
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.concurrent.ForkJoinPool
 
 @SpringBootApplication
+@EnableScheduling
 class IasminAsteriskAriApplication
 
 fun main(args: Array<String>) {

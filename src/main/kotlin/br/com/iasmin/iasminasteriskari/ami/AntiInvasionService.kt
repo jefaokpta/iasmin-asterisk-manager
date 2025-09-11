@@ -1,6 +1,5 @@
 package br.com.iasmin.iasminasteriskari.ami
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.asteriskjava.manager.event.InvalidAccountId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
