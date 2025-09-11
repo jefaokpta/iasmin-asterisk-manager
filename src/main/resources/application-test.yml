@@ -16,8 +16,7 @@ ari:
   inbound-app-name: test-inbound
 
 ami:
-  host: 127.0.0.1
-  port: 5038
+  host: 82.29.57.129
   user: test
   password: test
 

@@ -8,11 +8,9 @@ import org.asteriskjava.manager.action.ManagerAction
 import org.asteriskjava.manager.response.ManagerResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("!test")
 class AmiConnection(private val amiEventHandler: AmiEventHandler) {
 
     private val logger = LoggerFactory.getLogger(this::class.java)

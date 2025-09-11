@@ -11,7 +11,6 @@ class PeerWriterServiceTest {
     @Test
     fun `geracao de senha MD5`() {
         // Arrange
-        val service = PeerWriterService()
         val user = User(
             id = 1,
             name = "Alice",
