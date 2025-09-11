@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "br.com.iasmin"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2"
 description = "iasmin-asterisk-ari"
 
 java {
