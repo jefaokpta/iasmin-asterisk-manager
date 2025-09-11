@@ -1,4 +1,4 @@
-package br.com.iasmin.iasminasteriskari.controller
+package br.com.iasmin.iasminasteriskari.admin
 
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
 import org.springframework.web.bind.annotation.GetMapping
