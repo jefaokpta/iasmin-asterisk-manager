@@ -48,8 +48,8 @@ class AntiInvasionService {
         if (File(BLOCKED_FILE).exists()) {
             val fis = FileInputStream(BLOCKED_FILE)
             val ois = ObjectInputStream(fis)
-            val blockedFileList: List<String> = ois.readObject()
-            if (blockedFileList == blockedInvaders.keys.toList()) {
+            val blockedIps: Set<String> = ois.readObject() as Set<String>
+            if (blockedIps == blockedInvaders.keys.toSet()) {
                 logger.info("Nenhum IP novo para bloquear, não vou salvar")
                 return
             }
@@ -57,15 +57,15 @@ class AntiInvasionService {
         logger.info("Bloqueando novos IPs")
         val fos = FileOutputStream(BLOCKED_FILE)
         val oos = ObjectOutputStream(fos)
-        val blockedList = blockedInvaders.keys.toList()
-        oos.writeObject(blockedList)
+        val blockedIps = blockedInvaders.keys.toSet()
+        oos.writeObject(blockedIps)
         oos.close()
         fos.close()
         ProcessBuilder("iptables", "-F", "INPUT").start()
-        blockedList.forEach {
+        blockedIps.forEach {
             ProcessBuilder("iptables", "-I", "INPUT", "-s", it, "-j", "DROP").start()
         }
-        logger.info("IPs bloqueados $blockedList")
+        logger.info("IPs bloqueados $blockedIps")
     }
 
     fun clearAll() {
