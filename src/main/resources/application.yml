@@ -4,6 +4,14 @@ spring:
   threads:
     virtual:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 6MB
+
+server:
+  tomcat:
+    max-http-form-post-size: 6MB
 
 ari:
   host: "${ARI_HOST}"

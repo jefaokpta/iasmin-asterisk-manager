@@ -4,6 +4,14 @@ spring:
   threads:
     virtual:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 6MB
+
+server:
+  tomcat:
+    max-http-form-post-size: 6MB
 
 # Beans de conexão estão desativados no perfil de teste via @Profile("!test").
 # Mesmo assim, definimos valores dummy para evitar falhas de placeholder em outros serviços.
@@ -28,8 +36,8 @@ pabx:
   tech-prefix: 0
 
 audio:
-  record: /tmp/records
-  moh: default
+  record: /tmp
+  moh: /tmp
 
 iasmin:
   backend-api: http://localhost:18080
