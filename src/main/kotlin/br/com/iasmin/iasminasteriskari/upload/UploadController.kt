@@ -2,6 +2,7 @@ package br.com.iasmin.iasminasteriskari.upload
 
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,6 +20,7 @@ class UploadController(private val uploadService: UploadService) {
 
     data class ErrorResponse(val message: String)
 
+    @CrossOrigin
     @PostMapping(
         path = ["/{id}"],
         produces = [MediaType.APPLICATION_JSON_VALUE]
@@ -33,7 +35,6 @@ class UploadController(private val uploadService: UploadService) {
         if (!audio.contentType?.equals("audio/mpeg", true)!!) {
             return ResponseEntity.badRequest().body(ErrorResponse("Somente arquivos MP3 são permitidos"))
         }
-        val response = uploadService.uploadAudio(id, audio)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(uploadService.uploadAudio(id, audio))
     }
 }
