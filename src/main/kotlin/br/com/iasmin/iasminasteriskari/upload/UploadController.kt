@@ -1,13 +1,13 @@
 package br.com.iasmin.iasminasteriskari.upload
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.http.ResponseEntity
 
 /**
  * @author Jefferson A. Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -16,18 +16,24 @@ import org.springframework.http.ResponseEntity
 @RestController
 @RequestMapping("/uploads")
 class UploadController(private val uploadService: UploadService) {
-    
-    @PostMapping("/{id}")
-    fun uploadAudio(@PathVariable id: String, @RequestParam("audio") audio: MultipartFile): ResponseEntity<String> {
+
+    data class ErrorResponse(val message: String)
+
+    @PostMapping(
+        path = ["/{id}"],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    fun uploadAudio(@PathVariable id: String, @RequestParam("audio") audio: MultipartFile): ResponseEntity<Any> {
         if (audio.isEmpty) {
-            return ResponseEntity.badRequest().body("Faltando arquivo de audio")
+            return ResponseEntity.badRequest().body(ErrorResponse("Faltando arquivo de audio"))
         }
         if (audio.size > 5 * 1024 * 1024) {
-            return ResponseEntity.badRequest().body("Arquivo maior que 5MB")
+            return ResponseEntity.badRequest().body(ErrorResponse("Arquivo maior que 5MB"))
         }
         if (!audio.contentType?.equals("audio/mpeg", true)!!) {
-            return ResponseEntity.badRequest().body("Somente arquivos MP3 são permitidos")
+            return ResponseEntity.badRequest().body(ErrorResponse("Somente arquivos MP3 são permitidos"))
         }
-        return ResponseEntity.ok(jacksonObjectMapper().writeValueAsString(uploadService.uploadAudio(id, audio)))
+        val response = uploadService.uploadAudio(id, audio)
+        return ResponseEntity.ok(response)
     }
 }
