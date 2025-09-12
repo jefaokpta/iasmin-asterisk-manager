@@ -13,6 +13,7 @@ import br.com.iasmin.iasminasteriskari.ari.channel.ChannelLegEnum
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelState
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateEnum
+import ch.loway.oss.ari4java.ARI
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -76,8 +77,8 @@ class AriConnection(
                     recordChannel(ari, stasisStart.channel.id, stasisStart.args[1])
                     return
                 }
-                //TODO: validar JWT
                 val channel = stasisStart.channel
+                if (!jwtValidator(ari, channel)) return
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 channelStateCache.addChannelState(
                     ChannelState(
@@ -178,5 +179,19 @@ class AriConnection(
             }
 
         })
+    }
+
+    private fun jwtValidator(ari: ARI, channel: Channel): Boolean {
+        try {
+            val token = ari.channels().getChannelVar(channel.id, "PJSIP_HEADER(read,X-CALL-TOKEN)").execute().value
+            logger.warn("Token: $token")
+            return true
+        } catch (e: Exception) {
+            val message = "Erro ao obter token: ${e.message}"
+            logger.error(message, e)
+            ari.channels().setChannelVar(channel.id, "NOCDR").setValue(message).execute()
+            ari.channels().continueInDialplan(channel.id).execute()
+            return false
+        }
     }
 }
