@@ -25,6 +25,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.ari4java:ari4java:0.17.0")
     implementation(group = "org.asteriskjava", name = "asterisk-java", version = "3.41.0")
+    implementation("com.auth0:java-jwt:4.5.0")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

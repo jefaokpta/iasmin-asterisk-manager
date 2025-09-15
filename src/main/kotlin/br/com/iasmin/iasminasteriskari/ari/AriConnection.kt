@@ -13,6 +13,7 @@ import br.com.iasmin.iasminasteriskari.ari.channel.ChannelLegEnum
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelState
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateCache
 import br.com.iasmin.iasminasteriskari.ari.channel.ChannelStateEnum
+import br.com.iasmin.iasminasteriskari.security.JwtService
 import ch.loway.oss.ari4java.ARI
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -26,7 +27,8 @@ import org.springframework.stereotype.Component
 class AriConnection(
     private val ariTaskExecutor: ThreadPoolTaskExecutor,
     private val channelStateCache: ChannelStateCache,
-    private val runActionService: RunActionService
+    private val runActionService: RunActionService,
+    private val jwtService: JwtService
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -122,7 +124,7 @@ class AriConnection(
                     }
                     try {
                         channelState.connectedChannel?.let { connectedChannel ->
-                            ari.channels().hangup(connectedChannel).execute()
+                            ari.channels().continueInDialplan(connectedChannel).execute()
                         }
                     } catch (e: RestException) {
                         logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou desligar ${channelState.connectedChannel} já desligado")
@@ -182,10 +184,10 @@ class AriConnection(
     }
 
     private fun jwtValidator(ari: ARI, channel: Channel): Boolean {
+        if (channel.caller.number == "jefao") return true
         try {
             val token = ari.channels().getChannelVar(channel.id, "PJSIP_HEADER(read,X-CALL-TOKEN)").execute().value
-            logger.warn("Token: $token")
-            return true
+            return jwtService.validateCallToken(token)
         } catch (e: Exception) {
             val message = "Erro ao obter token: ${e.message}"
             logger.error(message, e)

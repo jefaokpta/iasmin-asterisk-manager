@@ -19,7 +19,7 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
         val channelState = channelStateCache.getChannelState(channel.id) ?: return
         val action = channelState.actions.removeFirstOrNull() ?: return
         when (action.type) {
-            ActionEnum.HANGUP -> ari.channels().hangup(channel.id).execute()
+            ActionEnum.HANGUP -> ari.channels().continueInDialplan(channel.id).execute()
             ActionEnum.ANSWER -> {
                 ari.channels().answer(channel.id).execute()
                 runAction(ari, channel, appName)
@@ -54,7 +54,7 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
                     )
                 } catch (e: Exception) {
                     logger.error("Erro ao criar canal B: ${e.message}", e)
-                    ari.channels().hangup(channel.id).execute()
+                    ari.channels().continueInDialplan(channel.id).execute()
                 }
             }
         }
