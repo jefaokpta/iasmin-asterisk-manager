@@ -124,7 +124,7 @@ class AriConnection(
                     }
                     try {
                         channelState.connectedChannel?.let { connectedChannel ->
-                            ari.channels().continueInDialplan(connectedChannel).execute()
+                            ari.channels().hangup(connectedChannel).execute()
                         }
                     } catch (e: RestException) {
                         logger.error("${channelState.channel.id} >> Canal ${channelState.channel.name} tentou desligar ${channelState.connectedChannel} já desligado")
@@ -192,7 +192,7 @@ class AriConnection(
             val message = "Erro ao obter token: ${e.message}"
             logger.error(message, e)
             ari.channels().setChannelVar(channel.id, "NOCDR").setValue(message).execute()
-            ari.channels().continueInDialplan(channel.id).execute()
+            ari.channels().hangup(channel.id).execute()
             return false
         }
     }
