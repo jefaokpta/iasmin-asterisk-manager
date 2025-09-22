@@ -57,7 +57,7 @@ open class CdrService {
     internal fun convertAudioToMp3(cdr: Cdr){
         logger.info("${cdr.uniqueId} >> Convertendo audio para mp3 ${cdr.callRecord}")
         val mp3Dir = "$AUDIO_RECORD/mp3s"
-        val audioFilePath = "$AUDIO_RECORD/${cdr.uniqueId.replace('.', '-')}-MIXED.sln"
+        val audioFilePath = "$AUDIO_RECORD/${cdr.uniqueId.replace('.', '-')}-mixed.sln"
         val mp3FilePath = "$mp3Dir/${cdr.callRecord}"
         val command = listOf("ffmpeg", "-i", audioFilePath, "-vn", "-acodec", "libmp3lame", "-ab", "128k", mp3FilePath)
         launch(command)
