@@ -80,7 +80,11 @@ class AriConnection(
                     return
                 }
                 val channel = stasisStart.channel
-                if (!jwtValidator(ari, channel)) return
+                if (!jwtValidator(ari, channel)) {
+                    ari.channels().setChannelVar(channel.id, "NOCDR").setValue("Token invalido").execute()
+                    ari.channels().continueInDialplan(channel.id).execute()
+                    return
+                }
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
                 channelStateCache.addChannelState(
                     ChannelState(
@@ -191,8 +195,6 @@ class AriConnection(
         } catch (e: Exception) {
             val message = "Erro ao obter token: ${e.message}"
             logger.error(message, e)
-            ari.channels().setChannelVar(channel.id, "NOCDR").setValue(message).execute()
-            ari.channels().hangup(channel.id).execute()
             return false
         }
     }
