@@ -5,5 +5,6 @@ enum class ActionEnum {
     HANGUP,
     PLAYBACK,
     SET_VARIABLE,
-    DIAL_TRUNK
+    DIAL_TRUNK,
+    DIAL_PEER
 }

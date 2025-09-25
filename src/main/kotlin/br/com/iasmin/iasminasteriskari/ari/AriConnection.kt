@@ -71,8 +71,12 @@ class AriConnection(
             }
 
             override fun onStasisStart(stasisStart: StasisStart) {
-                if (stasisStart.args.contains(ActionEnum.DIAL_TRUNK.name)) {
-                    runActionService.dialTrunkHandler(ari, stasisStart)
+                if (stasisStart.args.contains("internal")) return
+                if (
+                    stasisStart.args.contains(ActionEnum.DIAL_TRUNK.name) ||
+                    stasisStart.args.contains(ActionEnum.DIAL_PEER.name)
+                    ) {
+                    runActionService.newChannelCreatedHandler(ari, stasisStart)
                     return
                 }
                 if (stasisStart.args.contains("record")) {
@@ -86,6 +90,7 @@ class AriConnection(
                     return
                 }
                 logger.info("${channel.id} >> Ligacao de ${channel.caller.name} ${channel.caller.number} para ${channel.dialplan.exten} no canal ${channel.name}")
+                if (channel.dialplan.exten.length < 3) return internalCall(ari, channel, outboundAppName)
                 channelStateCache.addChannelState(
                     ChannelState(
                         controlNumber = stasisStart.args[0],
@@ -185,6 +190,22 @@ class AriConnection(
             }
 
         })
+    }
+
+    private fun internalCall(ari: ARI, channel: Channel, appName: String) {
+        logger.info("${channel.id} >> Chamada interna para ${channel.dialplan.exten}")
+        try {
+            ari.channels()
+                .originate("PJSIP/${channel.dialplan.exten}")
+                .setApp(appName)
+                .setAppArgs("internal")
+                .setTimeout(30)
+                .execute()
+        } catch (e: RestException) {
+            logger.error("Erro ao realizar chamada interna: ${e.message}", e)
+            ari.channels().setChannelVar(channel.id, "NOCDR").setValue("Token invalido").execute()
+            ari.channels().continueInDialplan(channel.id).execute()
+        }
     }
 
     private fun jwtValidator(ari: ARI, channel: Channel): Boolean {

@@ -57,10 +57,19 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
                     ari.channels().hangup(channel.id).execute()
                 }
             }
+
+            else -> logger.error("Ação desconhecida: ${action.type}")
         }
     }
 
-    fun dialTrunkHandler(ari: ARI, stasisStart: StasisStart) {
+    fun newChannelCreatedHandler(ari: ARI, stasisStart: StasisStart) {
+        when (stasisStart.type) {
+            ActionEnum.DIAL_TRUNK.name -> dialTrunk(ari, stasisStart)
+            ActionEnum.DIAL_PEER.name -> dialPeer(ari, stasisStart)
+        }
+    }
+
+    private fun dialTrunk(ari: ARI, stasisStart: StasisStart) {
         logger.warn(stasisStart.args.toString())
         val channelAId = stasisStart.args[1]
         val channelB = stasisStart.channel
@@ -70,6 +79,22 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
         ari.bridges().addChannel(bridge.id, channelB.id).execute()
         channelStateCache.updateChannelStateAttrs(channelAId, bridge.id, channelB.id)
         logger.info("${channelB.id} >> Discando com DDR: ${channelB.connected.number} para ${channelB.dialplan.exten}")
+        ari.channels()
+            .dial(channelB.id)
+            .setTimeout(30)
+            .execute()
+    }
+
+    private fun dialPeer(ari: ARI, stasisStart: StasisStart) {
+        logger.warn(stasisStart.args.toString())
+        val channelAId = stasisStart.args[1]
+        val channelB = stasisStart.channel
+        val bridge = ari.bridges().create().setType("mixing").execute()
+        logger.info("${channelB.id} >> Criada bridge id: ${bridge.id}")
+        ari.bridges().addChannel(bridge.id, channelAId).execute()
+        ari.bridges().addChannel(bridge.id, channelB.id).execute()
+        channelStateCache.updateChannelStateAttrs(channelAId, bridge.id, channelB.id)
+        logger.info("${channelB.id} >> Discando com peer: ${channelB.connected.number}")
         ari.channels()
             .dial(channelB.id)
             .setTimeout(30)
