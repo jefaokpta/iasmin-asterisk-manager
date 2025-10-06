@@ -62,6 +62,7 @@ auth_type=md5
 username=${user.id}
 md5_cred=${generateMd5Hash(user)}
 ;=============== FIM: ${user.id}
+;
         """.trimIndent()
     }
 
