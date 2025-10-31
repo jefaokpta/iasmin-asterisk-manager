@@ -35,7 +35,8 @@ class CdrServiceTest {
             callRecord = callRecord,
             channel = "PJSIP/1-00000001",
             userfield = "OUTBOUND",
-            destinationChannel = "PJSIP/2-00000002"
+            destinationChannel = "PJSIP/2-00000002",
+            callId = "123456"
         )
 
         val service = TestableCdrService()

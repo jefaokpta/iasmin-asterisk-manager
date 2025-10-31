@@ -3,9 +3,9 @@ package br.com.iasmin.iasminasteriskari.ami
 import org.asteriskjava.manager.event.CdrEvent
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
-import org.springframework.http.client.SimpleClientHttpRequestFactory
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

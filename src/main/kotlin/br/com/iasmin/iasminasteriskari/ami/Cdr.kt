@@ -21,6 +21,7 @@ data class Cdr(
     val channel: String,
     val userfield: String,
     val destinationChannel: String,
+    val callId: String?
 ) {
     
     constructor(cdrEvent: CdrEvent) : this(
@@ -37,7 +38,8 @@ data class Cdr(
         callRecord = if (cdrEvent.billableSeconds > 0) "${cdrEvent.uniqueId.replace(".","-")}.mp3" else null,
         channel = cdrEvent.channel,
         userfield = cdrEvent.userField,
-        destinationChannel = cdrEvent.destinationChannel
+        destinationChannel = cdrEvent.destinationChannel,
+        callId = cdrEvent.dynamicProperties["callid"] as String
     )
 
 }
