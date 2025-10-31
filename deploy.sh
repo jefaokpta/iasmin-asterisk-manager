@@ -13,7 +13,6 @@ fi
 sh gradlew clean build
 
 BUILD_EXIT_CODE=$?
-
 if [ $BUILD_EXIT_CODE -ne 0 ]; then
     echo "❌ Build falhou"
     exit 1
