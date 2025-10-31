@@ -8,7 +8,6 @@ import ch.loway.oss.ari4java.generated.models.Channel
 import ch.loway.oss.ari4java.generated.models.StasisStart
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import kotlin.collections.removeFirstOrNull
 
 @Service
 class RunActionService(private val channelStateCache: ChannelStateCache) {
@@ -63,7 +62,7 @@ class RunActionService(private val channelStateCache: ChannelStateCache) {
     }
 
     fun newChannelCreatedHandler(ari: ARI, stasisStart: StasisStart) {
-        when (stasisStart.type) {
+        when (stasisStart.args.first()) {
             ActionEnum.DIAL_TRUNK.name -> dialTrunk(ari, stasisStart)
             ActionEnum.DIAL_PEER.name -> dialPeer(ari, stasisStart)
         }
